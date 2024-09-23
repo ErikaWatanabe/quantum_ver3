@@ -3,7 +3,7 @@
 from amplify import VariableGenerator
 gen = VariableGenerator()
 q = gen.array("Binary", 2146) # 二値変数
-Cardi = 2000 # データの読み込み数
+Cardi = 500 # データの読み込み数
 
 
 
@@ -39,10 +39,10 @@ r_token = requests.post(f"https://api.jquants.com/v1/token/auth_refresh?refresht
 idToken = r_token.json()["idToken"]
 headers = {'Authorization': 'Bearer {}'.format(idToken)}
 
-# 3. 2. 2022,2023のtime_pointを取得
-# 2022のtime_point_22
+# 3. 2. 2020~2022,2023のtime_pointを取得
+# 2022~2022のtime_point_22
 time_point_22 = []
-from_22 = "2022-04-01" # 取得できる期間変わるので定期的に更新しないと
+from_22 = "2020-11-01" # 取得できる期間変わるので定期的に更新しないと
 to_22 = "2023-03-31"
 code_ = "7203"
 
@@ -187,10 +187,12 @@ url_sector = "https://api.jquants.com/v1/listed/info"
 sector_list = []
 code_list = []
 code_list_23 = []
+from_vol = "2022-04-01"
+to_vol = "2023-03-31"
 
 for i in range(real_cardi):
     # 取引高（Volume）の取得
-    res_volume = requests.get(f"{url}?code={code_2022[i]}&from={from_22}&to={to_22}", headers=headers)
+    res_volume = requests.get(f"{url}?code={code_2022[i]}&from={from_vol}&to={to_vol}", headers=headers)
     data_volume = res_volume.json()
     volume = [quote["Volume"] for quote in data_volume["daily_quotes"]]
     volume_sum = 0
@@ -279,7 +281,7 @@ import pandas as pd
 # 2022
 point_topix = []
 source = 'stooq'
-dt_s = date(2022, 4, 1)
+dt_s = date(2020, 11, 1)
 dt_e = date(2023, 3, 31)
 symbol = '^TPX'
 df_topix = web.DataReader(symbol, source, dt_s, dt_e)

@@ -1,9 +1,9 @@
 # 制約条件をコスト関数に入れるもの、()^2の形で
 
 # 1. 変数の初期設定等
-Cardi = 2000 # データの読み込み数
-Cardi_want = 200 # カーディナリティ制約
-Budget_want = 2000000 # 予算制約
+Cardi = 500 # データの読み込み数
+Cardi_want = 20 # カーディナリティ制約
+Budget_want = 600000 # 予算制約
 Volume_want = 100000 # 流動性制約
 import time
 start_time = time.time()
@@ -24,7 +24,7 @@ headers = {'Authorization': 'Bearer {}'.format(idToken)}
 
 # 3. 2. time_pointを先に取得
 time_point = []
-from_ = "2022-04-01" # 取得できる期間変わるので定期的に更新しないと
+from_ = "2020-11-01" # 取得できる期間変わるので定期的に更新しないと
 to_ = "2023-03-31"
 code_ = "7203"
 url = "https://api.jquants.com/v1/prices/daily_quotes"
@@ -155,7 +155,8 @@ code_2023_np = np.array(code_2023, dtype=float)
 
 # 4. 2. 超過リターンの計算
 import math
-for i in range(12):
+print("len(topix_first_np[0])", len(topix_first_np[0]))
+for i in range(len(topix_first_np[0])):
     # topix_return = (np.array(topix_last[1][i]) - np.array(topix_first[1][i])) / np.array(topix_first[1][i])
     topix_return = (topix_last_np[0][i] - topix_first_np[0][i]) / topix_first_np[0][i]
     portfolio_return = 0
@@ -254,7 +255,7 @@ print(selected_indices)
 selected_indices_2023 = []
 pr_array = []
 tp_array = []
-for i in range(12):
+for i in range(len(topix_first_np[0])):
     pr = 0
     for item in selected_indices:
         pr = pr + portfolio_first_np[item][i]
