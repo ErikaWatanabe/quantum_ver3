@@ -1,8 +1,8 @@
 # 制約条件をコスト関数に入れるもの、()^2の形で
 
 # 1. 変数の初期設定等
-Cardi = 500 # データの読み込み数
-Cardi_want = 20 # カーディナリティ制約
+Cardi = 10 # データの読み込み数
+Cardi_want = 5 # カーディナリティ制約
 Budget_want = 600000 # 予算制約
 Volume_want = 100000 # 流動性制約
 import time
@@ -90,6 +90,14 @@ with open(f"Cardinality_{Cardi}/data_last_{Cardi}.csv", mode='r', encoding='utf-
         portfolio_last.append(row)
 portfolio_last_np = np.array(portfolio_last[1:], dtype=float)
 
+# 株価読み込み
+stock_price = []
+with open(f"Cardinality_{Cardi}/stockprice_{Cardi}.csv", mode='r', encoding='utf-8') as file:
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        stock_price.append(row)
+stock_price_np = np.array(stock_price[1:], dtype=float)
+
 
 # 2023年度のTOPIX, 株価の読み込み
 topix_first_23 = []
@@ -152,27 +160,42 @@ with open(f"Cardinality_{Cardi}/code_{Cardi}_23.csv", mode='r', encoding='utf-8'
 code_2023_np = np.array(code_2023, dtype=float)
 
 
+# 重みの計算
+weight = []
+sum_weight = 0
+for i in range(real_cardi):
+    sum_weight = sum_weight + portfolio_first_np[i][0]
+for i in range(real_cardi):
+    weight.append(portfolio_first_np[i][0] / sum_weight)
+
+weight_23 = []
+sum_weight_23 = 0
+for i in range(real_cardi_23):
+    sum_weight_23 = sum_weight_23 + portfolio_first_np_23[i][0]
+for i in range(real_cardi_23):
+    weight_23.append(portfolio_first_np_23[i][0] / sum_weight_23)
+
+
+
 
 # 4. 2. 超過リターンの計算
 import math
-print("len(topix_first_np[0])", len(topix_first_np[0]))
 for i in range(len(topix_first_np[0])):
-    # topix_return = (np.array(topix_last[1][i]) - np.array(topix_first[1][i])) / np.array(topix_first[1][i])
     topix_return = (topix_last_np[0][i] - topix_first_np[0][i]) / topix_first_np[0][i]
     portfolio_return = 0
     for j in range(real_cardi):
-        # ここで二値変数q[i]をかける！
-        # print("i :", i, ", j :",j)
-        portfolio_return = portfolio_return + (portfolio_last_np[j][i] - portfolio_first_np[j][i]) * q[j] / portfolio_first_np[j][i]
+        # ここで二値変数q[i]、重みをかける！
+        # portfolio_return = portfolio_return + weight[j] * (portfolio_last_np[j][i] - portfolio_first_np[j][i]) * q[j] / portfolio_first_np[j][i]
+        portfolio_return = portfolio_return + weight[j] * (portfolio_last_np[j][i] - portfolio_first_np[j][i]) * q[j] / portfolio_first_np[j][i]
     over_return.append(portfolio_return - topix_return)
 
 over_return_ave = np.mean(over_return)
 
 # 目的関数
-mult = 0
-for i in range(len(over_return)):
-    mult = mult + (over_return[i] - over_return_ave) ** 2
-f = mult / ( Cardi_want - 1 )
+diff_sum = 0
+for i in range(len(over_return)):  # len(over_return)は観測期間の数、つまり月の数=29
+    diff_sum = diff_sum + (over_return[i] - over_return_ave) ** 2
+f = diff_sum / ( len(over_return) - 1 )
 
 # 1. カーディナリティ制約
 Cardi_sum = 0
@@ -183,7 +206,7 @@ f += 0.1 * (Cardi_want - Cardi_sum) ** 2
 # 2. 予算の拡充度制約
 Budget_sum = 0
 for i in range(real_cardi):
-        Budget_sum += portfolio_first_np[i][0] * q[i]
+        Budget_sum += stock_price_np[i][0] * q[i]
 
 # f += 0.001 * ((Budget_want - Budget_sum) * 1/10000) ** 2
 
@@ -248,13 +271,15 @@ for key, value in result.best.values.items() :
             index = index.replace('{', '').replace('}', '')
         index = int(index)
         selected_indices.append(index)
-print(selected_indices)
+
 
 # 2023年度のトラッキングエラー計算
 # グラフ用に2022のポイント格納
 selected_indices_2023 = []
 pr_array = []
 tp_array = []
+# print("over_return_ave", over_return_ave)
+# print("over_return", over_return)
 for i in range(len(topix_first_np[0])):
     pr = 0
     for item in selected_indices:
@@ -266,37 +291,59 @@ for item in selected_indices:
     for i in range(len(code_2023_np[0])):
         if(code_2022_np[0][item] == code_2023_np[0][i]):
             selected_indices_2023.append(i)
+            # print(code_2022_np[0][item], code_2023_np[0][i])
+            continue
+
 # print("selected_indices", len(selected_indices))
 # print("selected_indices_2023", len(selected_indices_2023))
+# print(selected_indices)
+# print(selected_indices_2023)
+# for item in selected_indices:
+#     print(code_2022_np[0][item], item)
+#     print(portfolio_first_np[item])
+# print("2023_____________________")
+# for item in selected_indices_2023:
+#     print(code_2023_np[0][item], item)
+#     print(portfolio_first_np_23[item])
+
+
 
 
 over_return_23 = []
 pr_array_23 = []
 tp_array_23 = []
+
+
 for i in range(12):
     topix_return_23 = (topix_last_np_23[0][i] - topix_first_np_23[0][i]) / topix_first_np_23[0][i]
     portfolio_return_23 = 0
     pr = 0
     for item in selected_indices_2023:
+        # print("portfolio_first_np_23[", item, "][", i, "]", portfolio_first_np_23[item][i])
         pr = pr + portfolio_first_np_23[item][i]
-        portfolio_return_23 = portfolio_return_23 + (portfolio_last_np_23[item][i] - portfolio_first_np_23[item][i]) / portfolio_first_np_23[item][i]
+        portfolio_return_23 = portfolio_return_23 + weight_23[item] * (portfolio_last_np_23[item][i] - portfolio_first_np_23[item][i]) / portfolio_first_np_23[item][i]
+        # print(portfolio_return_23)
     over_return_23.append(portfolio_return_23 - topix_return_23)
     pr_array_23.append(pr)
     tp_array_23.append(topix_first_np_23[0][i])
+    # print("pr", pr)
+    # print("")
+
+
 
 over_return_ave_23 = np.mean(over_return_23)
 
 mult_23 = 0
 for i in range(len(over_return_23)):
     mult_23 = mult_23 + (over_return_23[i] - over_return_ave_23) ** 2
-f_23 = mult_23 / (Cardi_want - 1)
+f_23 = mult_23 / (len(over_return_23) - 1)
 
 
 
 # 産業分野の割合、予算合計、流動性の結果計算
 dict_sector_p_res = {}
 for select_i in selected_indices:
-    Budget_sum += portfolio_first_np[select_i][0]
+    Budget_sum += stock_price_np[select_i][0]
     volume_result.append(volume_ave_np[0][select_i] / 1000)
     add_to_dict(sector[0][select_i], dict_sector_p_res, 1)
 
@@ -357,8 +404,11 @@ japanize_matplotlib.japanize()
 
 pr_sum = pr_array + pr_array_23
 tp_sum = tp_array + tp_array_23
+# print("tp_array", pr_array)
+# print("tp_array_23", pr_array_23)
+# print(tp_sum)
 fig3, ax1 = plt.subplots()
-ax1.set_title('2022年～2023年')
+ax1.set_title('過去3年のTEを最小化するようなポートフォリオ')
 ax1.plot(tp_sum, label='TOPIX', color='blue')
 ax1.set_ylabel('TOPIX', color='blue')
 ax1.tick_params(axis='y', labelcolor='blue')
@@ -368,7 +418,6 @@ ax2.set_ylabel('ポートフォリオ', color='green')
 ax2.tick_params(axis='y', labelcolor='green')
 
 plt.show()
-# print("tp_array", tp_array)
-# print("tp_array_23", tp_array_23)
+
 
 

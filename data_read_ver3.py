@@ -3,7 +3,7 @@
 from amplify import VariableGenerator
 gen = VariableGenerator()
 q = gen.array("Binary", 2146) # 二値変数
-Cardi = 500 # データの読み込み数
+Cardi = 1000 # データの読み込み数
 
 
 
@@ -101,22 +101,28 @@ data_close_first = defaultdict(list) # 月初の全銘柄の株価を、月をke
 data_close_last = defaultdict(list) # 月末の全銘柄の株価を、月をkeyとして格納
 # data_close_first["2022-04"][0]で4月初の0番目の銘柄の株価取得
 
+Cardi_rep = Cardi
 for key in monthly_data.keys():
     date_first = monthly_data[key][0]
     date_last = monthly_data[key][-1] 
     month_key_list.append(key)   
-    print(key)
+    print(key , "Cardi_rep : ", Cardi_rep)
     # print(count)
     # print(next(iter(monthly_data)))
 
 # 月初、月末の株価取得
-    for i in range(Cardi):
+    i = -1
+    count_rep = 0 #while文を繰り返した数
+    non_data = 0 #その月でデータが読み取れなかった数
+    while count_rep < Cardi_rep:
+        count_rep = count_rep + 1
+        i = i + 1
         res_first = requests.get(f"{url}?code={code_2022[i]}&date={date_first}", headers=headers)
         res_last = requests.get(f"{url}?code={code_2022[i]}&date={date_last}", headers=headers)
         data_first = res_first.json()
         data_last = res_last.json()
         
-        if not data_first["daily_quotes"]: # Jquantsに銘柄コードがない時の例外処理
+        if (not data_first["daily_quotes"]) or (not data_last["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
             if key == next(iter(monthly_data)):
                 print(code_2022[i], "はありません、最初なので銘柄コードのみ削除します")
             else:
@@ -125,15 +131,24 @@ for key in monthly_data.keys():
                     if(key == key_past):
                         break
                     else:
-                        data_close_first[key_past].pop(i-1)
-                        data_close_last[key_past].pop(i-1)
+                        data_close_first[key_past].pop(i)
+                        data_close_last[key_past].pop(i)
+                for m in range(3):
+                    print(" ")
+                    print(code_2022[i]," ", i, "番目__________")
+                    for key_past in monthly_data.keys():
+                        print(data_close_first[key_past], end="")
+                
             code_2022.pop(i)
-            i = i-1
+            i = i-1 #popすると後ろの要素は前にシフトされるから
             count = count + 1
-            continue
-
-        data_close_first[key].append(data_first["daily_quotes"][0]["Close"])
-        data_close_last[key].append(data_last["daily_quotes"][0]["Close"])
+            non_data = non_data + 1
+        
+        else:
+            data_close_first[key].append(data_first["daily_quotes"][0]["AdjustmentClose"])
+            data_close_last[key].append(data_last["daily_quotes"][0]["AdjustmentClose"])
+    Cardi_rep = Cardi_rep - non_data
+        
 
 
 # 2023のデータ取得
@@ -141,22 +156,28 @@ count_23 = 0
 month_key_list_23 = []
 data_close_first_23 = defaultdict(list) # 月初の全銘柄の株価を、月をkeyとして格納
 data_close_last_23 = defaultdict(list) # 月末の全銘柄の株価を、月をkeyとして格納
+Cardi_rep = Cardi
 for key in monthly_data_23.keys():
     date_first_23 = monthly_data_23[key][0]
     date_last_23 = monthly_data_23[key][-1] 
     month_key_list_23.append(key)   
-    print(key)
+    print(key , "Cardi_rep : ", Cardi_rep)
     # print(count_23)
     # print(next(iter(monthly_data)))
 
 # 月初、月末の株価取得
-    for i in range(Cardi):
+    i = -1
+    count_rep = 0 #while文を繰り返した数
+    non_data = 0 #その月でデータが読み取れなかった数
+    while count_rep < Cardi_rep:
+        count_rep = count_rep + 1
+        i = i + 1
         res_first_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_first_23}", headers=headers)
         res_last_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_last_23}", headers=headers)
         data_first_23 = res_first_23.json()
         data_last_23 = res_last_23.json()
         
-        if not data_first_23["daily_quotes"]: # Jquantsに銘柄コードがない時の例外処理
+        if (not data_first_23["daily_quotes"]) or (not data_last_23["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
             if key == next(iter(monthly_data_23)):
                 print(code_2023[i], "はありません、最初なので銘柄コードのみ削除します(2023)")
             else:
@@ -165,59 +186,137 @@ for key in monthly_data_23.keys():
                     if(key == key_past):
                         break
                     else:
-                        data_close_first_23[key_past].pop(i-1)
-                        data_close_last_23[key_past].pop(i-1)
+                        data_close_first_23[key_past].pop(i)
+                        data_close_last_23[key_past].pop(i)
             code_2023.pop(i)
             i = i-1
             count_23 = count_23 + 1
-            continue
+            non_data = non_data + 1
 
-        data_close_first_23[key].append(data_first_23["daily_quotes"][0]["Close"])
-        data_close_last_23[key].append(data_last_23["daily_quotes"][0]["Close"])
+        else:
+            data_close_first_23[key].append(data_first_23["daily_quotes"][0]["AdjustmentClose"])
+            data_close_last_23[key].append(data_last_23["daily_quotes"][0]["AdjustmentClose"])
+    Cardi_rep = Cardi_rep - non_data
+        
 
-
+print("********** 株価読み取り終了 **********")
+real_cardi = Cardi - count
+real_cardi_23 = Cardi - count_23
+print("real_cardi :", real_cardi)
+print("real_cardi_23 :", real_cardi_23)
 
 
 # 取引高・産業分野・銘柄コードの取得
-real_cardi = Cardi - count
-real_cardi_23 = Cardi - count_23
 volume= []
 volume_ave = []
 url_sector = "https://api.jquants.com/v1/listed/info"
+url_numstock = "https://api.jquants.com/v1/fins/statements"
 sector_list = []
 code_list = []
+numstock_list = []
 code_list_23 = []
 from_vol = "2022-04-01"
 to_vol = "2023-03-31"
+import yfinance as yf
 
-for i in range(real_cardi):
-    # 取引高（Volume）の取得
-    res_volume = requests.get(f"{url}?code={code_2022[i]}&from={from_vol}&to={to_vol}", headers=headers)
-    data_volume = res_volume.json()
-    volume = [quote["Volume"] for quote in data_volume["daily_quotes"]]
-    volume_sum = 0
-    for j in range(len(volume)):
-        if volume[j] is not None:
-            volume_sum += volume[j]
-        else:
-            print(code_2022[i], "のvolumeでNoneあり、銘柄コードを削除します")
-            code_2022.pop(j)
-            real_cardi = real_cardi - 1
-
-    volume_ave.append(volume_sum / len(volume))
-
+i = -1
+real_cardi_rep = real_cardi
+count_rep = 0
+while count_rep < real_cardi_rep:
+    count_rep = count_rep + 1
+    i = i + 1
     # 産業分野（Sector）の取得
     res_sector = requests.get(f"{url_sector}?code={code_2022[i]}&date={from_22}", headers=headers)
     data_sector = res_sector.json()
     sector = [quote["Sector17CodeName"] for quote in data_sector["info"]]
     sector_list.append(sector[0])
 
-    # 銘柄コードの取得
-    code_list.append(code_2022[i])
+    # 取引高（Volume）の取得
+    res_volume = requests.get(f"{url}?code={code_2022[i]}&from={from_vol}&to={to_vol}", headers=headers)
+    data_volume = res_volume.json()
+    volume = [quote["Volume"] for quote in data_volume["daily_quotes"]]
+    volume_sum = 0
+    volume_flag = True
+    for k in range(len(volume)):
+        if volume[k] is not None:
+            volume_sum += volume[k]
+        else:
+            print(code_2022[i], "のvolumeでNoneあり、銘柄コードを削除します")
+            volume_flag = False
+            for key in monthly_data.keys():
+                data_close_first[key].pop(i)
+                data_close_last[key].pop(i)
+            break
+    
+    if volume_flag :
+        volume_ave.append(volume_sum / len(volume))
+    else:
+        code_2022.pop(i)
+        real_cardi = real_cardi - 1
+        i = i - 1
+        real_cardi_rep = real_cardi_rep - 1
+        volume_flag = True
 
-for i in range(real_cardi_23):
-    code_list_23.append(code_2023[i])
+print("********** 産業分野、取引高の読み込み終了 **********")
+print("real_cardi :", real_cardi)
+print("len(volume_ave) :", len(volume_ave))
 
+i = -1
+count_rep = 0
+while count_rep < real_cardi_rep:
+    count_rep = count_rep + 1
+    i = i + 1
+    stock = yf.Ticker(f"{code_2022[i]}.T")
+    shares_outstanding = stock.info.get("sharesOutstanding")
+    if shares_outstanding is not None:
+        numstock_list.append(shares_outstanding)
+        # 銘柄コードの取得
+        code_list.append(code_2022[i])
+    else:
+        print(code_2022[i], "のnumstockでNoneあり、銘柄コードを削除します(2022)")
+        for key in monthly_data.keys():
+            data_close_first[key].pop(i)
+            data_close_last[key].pop(i)
+        volume_ave.pop(i)
+        code_2022.pop(i)
+        real_cardi = real_cardi - 1
+        real_cardi_rep = real_cardi_rep - 1
+        i = i - 1
+print("********** numstock_listの読み込み終了 **********")
+print("real_cardi :", real_cardi)
+print("len(volume_ave) :", len(volume_ave))
+print("len(numstock_list) :", len(numstock_list))
+
+
+numstock_list_23 = []
+i = -1
+count_rep = 0
+real_cardi_23_rep = real_cardi_23
+while count_rep < real_cardi_23_rep:
+    count_rep = count_rep + 1
+    i = i + 1
+    stock = yf.Ticker(f"{code_2023[i]}.T")
+    shares_outstanding = stock.info.get("sharesOutstanding")
+    if shares_outstanding is not None:
+        numstock_list_23.append(shares_outstanding)
+        code_list_23.append(code_2023[i])
+    else:
+        print(code_2023[i], "のnumstockでNoneあり、銘柄コードを削除します(2023)")
+        for key in monthly_data_23.keys():
+            data_close_first_23[key].pop(i)
+            data_close_last_23[key].pop(i)
+        code_2023.pop(i)
+        real_cardi_23 = real_cardi_23 - 1
+        real_cardi_23_rep = real_cardi_23_rep - 1
+        i = i - 1
+
+print("********** numstock_list_23の読み込み終了 **********")
+print("real_cardi_23 :", real_cardi_23)
+print("len(numstock_list_23) :", len(numstock_list_23))
+# print(numstock_list)
+# print(numstock_list_23)
+# print(data_close_first)
+# print(data_close_first_23)
 
 # csvファイルに株価、volumeの書き込み
 with open (f"Cardinality_{Cardi}/volume_{Cardi}.csv", "w", newline='') as f:
@@ -242,7 +341,16 @@ with open (f"Cardinality_{Cardi}/data_first_{Cardi}.csv", "w", newline='') as f:
     for i in range(real_cardi):
         data_csv = []
         for key in monthly_data.keys():
-            data_csv.append(data_close_first[key][i])
+            data_csv.append(numstock_list[i] * data_close_first[key][i]) # 時価総額を格納
+        writer.writerow(data_csv)
+
+with open (f"Cardinality_{Cardi}/stockprice_{Cardi}.csv", "w", newline='') as f:
+    writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    writer.writerow(month_key_list)
+    for i in range(real_cardi):
+        data_csv = []
+        for key in monthly_data.keys():
+            data_csv.append(data_close_first[key][i]) # 株価だけ
         writer.writerow(data_csv)
 
 with open (f"Cardinality_{Cardi}/data_last_{Cardi}.csv", "w", newline='') as f:
@@ -251,7 +359,7 @@ with open (f"Cardinality_{Cardi}/data_last_{Cardi}.csv", "w", newline='') as f:
     for i in range(real_cardi):
         data_csv = []
         for key in monthly_data.keys():
-            data_csv.append(data_close_last[key][i])
+            data_csv.append(numstock_list[i] * data_close_last[key][i])
         writer.writerow(data_csv)
 
 with open (f"Cardinality_{Cardi}/data_first_{Cardi}_23.csv", "w", newline='') as f:
@@ -260,7 +368,9 @@ with open (f"Cardinality_{Cardi}/data_first_{Cardi}_23.csv", "w", newline='') as
     for i in range(real_cardi_23):
         data_csv = []
         for key in monthly_data_23.keys():
-            data_csv.append(data_close_first_23[key][i])
+            # if i == 11:
+                # print(key, ":", data_close_first_23[key][i])
+            data_csv.append(numstock_list_23[i] * data_close_first_23[key][i])
         writer.writerow(data_csv)
 
 with open (f"Cardinality_{Cardi}/data_last_{Cardi}_23.csv", "w", newline='') as f:
@@ -269,7 +379,7 @@ with open (f"Cardinality_{Cardi}/data_last_{Cardi}_23.csv", "w", newline='') as 
     for i in range(real_cardi_23):
         data_csv = []
         for key in monthly_data_23.keys():
-            data_csv.append(data_close_last_23[key][i])
+            data_csv.append(numstock_list_23[i] * data_close_last_23[key][i])
         writer.writerow(data_csv)
 
 
