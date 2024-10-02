@@ -1,8 +1,8 @@
 # 制約条件をコスト関数に入れるもの、()^2の形で
 
 # 1. 変数の初期設定等
-Cardi = 10 # データの読み込み数
-Cardi_want = 5 # カーディナリティ制約
+Cardi = 500 # データの読み込み数
+Cardi_want = 50 # カーディナリティ制約
 Budget_want = 600000 # 予算制約
 Volume_want = 100000 # 流動性制約
 import time
@@ -220,7 +220,7 @@ for i in range(real_cardi):
     else:
         count_volume += q[i] * false
         # print("20万以下 : ", i)
-# f += 0.1 * (Cardi_want - count_volume) ** 2
+f += 0.1 * (Cardi_want - count_volume) ** 2
 
 
 # 4. 産業の構成割合制約
@@ -236,8 +236,8 @@ for i in range(real_cardi):
     add_to_dict(sector[0][i], dict_sector_t, 1)
     add_to_dict(sector[0][i], dict_sector_p, q[i])
 
-# for key in dict_sector_t.keys():
-#     f += 0.001*(( dict_sector_t[key] / real_cardi ) - ( dict_sector_p[key] / real_cardi )) ** 2
+for key in dict_sector_t.keys():
+    f += 0.001*(( dict_sector_t[key] / real_cardi ) - ( dict_sector_p[key] / real_cardi )) ** 2
 
 
 

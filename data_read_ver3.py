@@ -3,7 +3,7 @@
 from amplify import VariableGenerator
 gen = VariableGenerator()
 q = gen.array("Binary", 2146) # 二値変数
-Cardi = 1000 # データの読み込み数
+Cardi = 500 # データの読み込み数
 
 
 
@@ -117,10 +117,30 @@ for key in monthly_data.keys():
     while count_rep < Cardi_rep:
         count_rep = count_rep + 1
         i = i + 1
-        res_first = requests.get(f"{url}?code={code_2022[i]}&date={date_first}", headers=headers)
-        res_last = requests.get(f"{url}?code={code_2022[i]}&date={date_last}", headers=headers)
-        data_first = res_first.json()
-        data_last = res_last.json()
+        try:
+            res_first = requests.get(f"{url}?code={code_2022[i]}&date={date_first}", headers=headers)
+            res_last = requests.get(f"{url}?code={code_2022[i]}&date={date_last}", headers=headers)
+            data_first = res_first.json()
+            data_last = res_last.json()
+        except Exception as e:
+            print(f"株価読み込みで予期しないエラーが発生しました!!!!!!!: {e}")
+            if key == next(iter(monthly_data)):
+                print(code_2022[i], "はありません、最初なので銘柄コードのみ削除します")
+            else:
+                print(code_2022[i], "はありません、2ヶ月目以降なのでデータも削除します")
+                for key_past in monthly_data.keys(): #これまでのkeyのデータ削除
+                    if(key == key_past):
+                        break
+                    else:
+                        data_close_first[key_past].pop(i)
+                        data_close_last[key_past].pop(i)
+            code_2022.pop(i)
+            # print(code_2022[i-1], code_2022[i], code_2022[i+1])
+            i = i-1 #popすると後ろの要素は前にシフトされるから
+            count = count + 1
+            non_data = non_data + 1
+            continue
+
         
         if (not data_first["daily_quotes"]) or (not data_last["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
             if key == next(iter(monthly_data)):
@@ -133,13 +153,9 @@ for key in monthly_data.keys():
                     else:
                         data_close_first[key_past].pop(i)
                         data_close_last[key_past].pop(i)
-                for m in range(3):
-                    print(" ")
-                    print(code_2022[i]," ", i, "番目__________")
-                    for key_past in monthly_data.keys():
-                        print(data_close_first[key_past], end="")
-                
+            # print(data_first)
             code_2022.pop(i)
+            # print(code_2022[i-1], code_2022[i], code_2022[i+1])
             i = i-1 #popすると後ろの要素は前にシフトされるから
             count = count + 1
             non_data = non_data + 1
@@ -172,10 +188,27 @@ for key in monthly_data_23.keys():
     while count_rep < Cardi_rep:
         count_rep = count_rep + 1
         i = i + 1
-        res_first_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_first_23}", headers=headers)
-        res_last_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_last_23}", headers=headers)
-        data_first_23 = res_first_23.json()
-        data_last_23 = res_last_23.json()
+        try:
+            res_first_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_first_23}", headers=headers)
+            res_last_23 = requests.get(f"{url}?code={code_2023[i]}&date={date_last_23}", headers=headers)
+            data_first_23 = res_first_23.json()
+            data_last_23 = res_last_23.json()
+        except Exception as e:
+            print(f"株価読み込みで予期しないエラーが発生しました!!!!!!!: {e}")
+            if key == next(iter(monthly_data_23)):
+                print(code_2023[i], "はありません、最初なので銘柄コードのみ削除します(2023)")
+            else:
+                print(code_2023[i], "はありません、2ヶ月目以降なのでデータも削除します(2023)")
+                for key_past in monthly_data_23.keys(): #これまでのkeyのデータ削除
+                    if(key == key_past):
+                        break
+                    else:
+                        data_close_first_23[key_past].pop(i)
+                        data_close_last_23[key_past].pop(i)
+            code_2023.pop(i)
+            i = i-1
+            count_23 = count_23 + 1
+            non_data = non_data + 1
         
         if (not data_first_23["daily_quotes"]) or (not data_last_23["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
             if key == next(iter(monthly_data_23)):
@@ -254,7 +287,7 @@ while count_rep < real_cardi_rep:
         code_2022.pop(i)
         real_cardi = real_cardi - 1
         i = i - 1
-        real_cardi_rep = real_cardi_rep - 1
+        # real_cardi_rep = real_cardi_rep - 1
         volume_flag = True
 
 print("********** 産業分野、取引高の読み込み終了 **********")
@@ -280,7 +313,7 @@ while count_rep < real_cardi_rep:
         volume_ave.pop(i)
         code_2022.pop(i)
         real_cardi = real_cardi - 1
-        real_cardi_rep = real_cardi_rep - 1
+        # real_cardi_rep = real_cardi_rep - 1
         i = i - 1
 print("********** numstock_listの読み込み終了 **********")
 print("real_cardi :", real_cardi)
@@ -307,7 +340,7 @@ while count_rep < real_cardi_23_rep:
             data_close_last_23[key].pop(i)
         code_2023.pop(i)
         real_cardi_23 = real_cardi_23 - 1
-        real_cardi_23_rep = real_cardi_23_rep - 1
+        # real_cardi_23_rep = real_cardi_23_rep - 1
         i = i - 1
 
 print("********** numstock_list_23の読み込み終了 **********")
