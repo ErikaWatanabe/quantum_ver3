@@ -1,8 +1,8 @@
 # 制約条件をコスト関数に入れるもの、()^2の形で
 
 # 1. 変数の初期設定等
-Cardi = 500 # データの読み込み数
-Cardi_want = 50 # カーディナリティ制約
+Cardi = 1000 # データの読み込み数
+Cardi_want = 100 # カーディナリティ制約
 Budget_want = 600000 # 予算制約
 Volume_want = 100000 # 流動性制約
 import time
@@ -43,13 +43,12 @@ for date_str in time_point: # 日付を扱いやすいように辞書型に変�
     monthly_data[month_key].append(date_str)
 
 
-
-
 # 4. 量子アニーリングで組み入れ銘柄決定
 # 4. 1. 目的関数の生成
 from amplify import VariableGenerator
 gen = VariableGenerator()
 q = gen.array("Binary", 2146) # 二値変数
+print(q)
 object_f = 0
 over_return = []
 
@@ -59,106 +58,78 @@ import csv
 import numpy as np
 real_cardi = -1 # 銘柄コード除外した分の個数
 real_cardi_23 = -1
+dumyy = 0
 
 # 2022年度のTOPIX, 株価の読み込み
+def read_data(array, filename):
+    with open(f"Cardinality_{Cardi}/{filename}.csv", mode='r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            array.append(row)
+    array_np = np.array(array[1:], dtype=float)
+    return array_np
+
 topix_first = []
-with open(f"Cardinality_{Cardi}/topix_first_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        topix_first.append(row)
-topix_first_np = np.array(topix_first[1:], dtype=float)
+topix_first_np = read_data(topix_first, f"topix_first_{Cardi}")
 
 topix_last = []
-with open(f"Cardinality_{Cardi}/topix_last_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        topix_last.append(row)
-topix_last_np = np.array(topix_last[1:], dtype=float)
+topix_last_np = read_data(topix_last, f"topix_last_{Cardi}")
 
-portfolio_first = []
-with open(f"Cardinality_{Cardi}/data_first_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        portfolio_first.append(row)
-        real_cardi = real_cardi + 1
-portfolio_first_np = np.array(portfolio_first[1:], dtype=float)
-
-portfolio_last = []
-with open(f"Cardinality_{Cardi}/data_last_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        portfolio_last.append(row)
-portfolio_last_np = np.array(portfolio_last[1:], dtype=float)
-
-# 株価読み込み
 stock_price = []
-with open(f"Cardinality_{Cardi}/stockprice_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        stock_price.append(row)
-stock_price_np = np.array(stock_price[1:], dtype=float)
+stock_price_np = read_data(stock_price, f"stockprice_{Cardi}")
 
-
-# 2023年度のTOPIX, 株価の読み込み
 topix_first_23 = []
-with open(f"Cardinality_{Cardi}/topix_first_{Cardi}_23.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        topix_first_23.append(row)
-topix_first_np_23 = np.array(topix_first_23[1:], dtype=float)
+topix_first_np_23 = read_data(topix_first_23, f"topix_first_{Cardi}_23")
 
 topix_last_23 = []
-with open(f"Cardinality_{Cardi}/topix_last_{Cardi}_23.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        topix_last_23.append(row)
-topix_last_np_23 = np.array(topix_last_23[1:], dtype=float)
+topix_last_np_23 = read_data(topix_last_23, f"topix_last_{Cardi}_23")
+
+
+def read_portfolio(array, filename, rc):
+    with open(f"Cardinality_{Cardi}/{filename}.csv", mode='r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            array.append(row)
+            rc += 1
+    array_np = np.array(array[1:], dtype=float)
+    return array_np, rc
+
+portfolio_first = []
+portfolio_first_np, real_cardi = read_portfolio(portfolio_first, f"data_first_{Cardi}", real_cardi)
+
+portfolio_last = []
+portfolio_last_np, dumyy = read_portfolio(portfolio_last, f"data_last_{Cardi}", dumyy)
 
 portfolio_first_23 = []
-with open(f"Cardinality_{Cardi}/data_first_{Cardi}_23.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        portfolio_first_23.append(row)
-        real_cardi_23 = real_cardi_23 + 1
-portfolio_first_np_23 = np.array(portfolio_first_23[1:], dtype=float)
+portfolio_first_np_23, real_cardi_23 = read_portfolio(portfolio_first_23, f"data_first_{Cardi}_23", real_cardi_23)
 
 portfolio_last_23 = []
-with open(f"Cardinality_{Cardi}/data_last_{Cardi}_23.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        portfolio_last_23.append(row)
-portfolio_last_np_23 = np.array(portfolio_last_23[1:], dtype=float)
+portfolio_last_np_23, dumyy = read_portfolio(portfolio_last_23, f"data_last_{Cardi}_23", dumyy)
 
 
 # 取引高、産業分野、銘柄コードの読み込み
+def read_other(array, filename):
+    with open(f"Cardinality_{Cardi}/{filename}.csv", mode='r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            array.append(row)
+    array_np = np.array(array, dtype=float)
+    return array_np
+
 volume_ave = []
-with open(f"Cardinality_{Cardi}/volume_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        volume_ave.append(row)
-volume_ave_np = np.array(volume_ave, dtype=float)
+volume_ave_np = read_other(volume_ave, f"volume_{Cardi}")
+
+code_2022 = []
+code_2022_np = read_other(code_2022, f"code_{Cardi}")
+
+code_2023 = []
+code_2023_np = read_other(code_2023, f"code_{Cardi}_23")
 
 sector = []
 with open(f"Cardinality_{Cardi}/sector_{Cardi}.csv", mode='r', encoding='utf-8') as file:
     csv_reader = csv.reader(file)
     for row in csv_reader:
         sector.append(row)
-    # print(sector)
-
-code_2022 = []
-with open(f"Cardinality_{Cardi}/code_{Cardi}.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        code_2022.append(row)
-code_2022_np = np.array(code_2022, dtype=float)
-
-code_2023 = []
-with open(f"Cardinality_{Cardi}/code_{Cardi}_23.csv", mode='r', encoding='utf-8') as file:
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        code_2023.append(row)
-code_2023_np = np.array(code_2023, dtype=float)
-
 
 # 重みの計算
 weight = []
@@ -174,8 +145,6 @@ for i in range(real_cardi_23):
     sum_weight_23 = sum_weight_23 + portfolio_first_np_23[i][0]
 for i in range(real_cardi_23):
     weight_23.append(portfolio_first_np_23[i][0] / sum_weight_23)
-
-
 
 
 # 4. 2. 超過リターンの計算
@@ -240,6 +209,8 @@ for key in dict_sector_t.keys():
     f += 0.001*(( dict_sector_t[key] / real_cardi ) - ( dict_sector_p[key] / real_cardi )) ** 2
 
 
+# 5. ボラティリティ制約
+
 
 
 
@@ -293,20 +264,6 @@ for item in selected_indices:
             selected_indices_2023.append(i)
             # print(code_2022_np[0][item], code_2023_np[0][i])
             continue
-
-# print("selected_indices", len(selected_indices))
-# print("selected_indices_2023", len(selected_indices_2023))
-# print(selected_indices)
-# print(selected_indices_2023)
-# for item in selected_indices:
-#     print(code_2022_np[0][item], item)
-#     print(portfolio_first_np[item])
-# print("2023_____________________")
-# for item in selected_indices_2023:
-#     print(code_2023_np[0][item], item)
-#     print(portfolio_first_np_23[item])
-
-
 
 
 over_return_23 = []

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>受け取ったデータ</title>
+</head>
+<body>
+    <h2>受け取ったデータ</h2>
+    <p>カーディナリティ制約 >> λ1:{{ lamda1 }} , C:{{ position1 }}</p>
+    <p>予算制約 >> λ2:{{ lamda2 }} , B:{{ position2 }}</p>
+    <p>流動性制約 >> λ3:{{ lamda3 }} , V:{{ position3 }}</p>
+    <p>産業の構成割合制約 >> λ4:{{ lamda4 }}</p>
+    <br><br>
+
+    <h1>結果グラフ</h1>
+    <img src="../../static/portfolio_graph.png" alt="ポートフォリオグラフ">
+    <br>
+    <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ">
+
+    <br>
+    <a href="/">フォームに戻る</a>
+</body>
+</html>
