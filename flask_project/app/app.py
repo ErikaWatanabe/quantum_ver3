@@ -1,5 +1,5 @@
 #Flaskとrender_template（HTMLを表示させるための関数）をインポート
-from flask import Flask,render_template, request
+from flask import Flask, render_template, request
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
@@ -364,15 +364,10 @@ def submit():
     ax2.set_ylabel('ポートフォリオ', color='green')
     ax2.tick_params(axis='y', labelcolor='green')
 
-    plt.savefig('static/portfolio_graph.png', dpi=300, bbox_inches='tight')
+    plt.savefig('flask_project/app/static/portfolio_graph.png', dpi=300, bbox_inches='tight')
+    # plt.savefig('static/portfolio_graph.png', dpi=300, bbox_inches='tight')
+
     # plt.show()
-
-
-
-
-
-
-
 
 
 
@@ -385,4 +380,6 @@ def submit():
                            lamda1=lamda1, position1=position1,
                            lamda2=lamda2, position2=position2,
                            lamda3=lamda3, position3=position3,
-                           lamda4=lamda4)
+                           lamda4=lamda4, 
+                           tracking_error22 = math.sqrt(result.best.objective)*100,
+                           tracking_error23 = math.sqrt(f_23) * 100)
