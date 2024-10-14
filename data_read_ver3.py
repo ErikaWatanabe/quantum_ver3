@@ -3,7 +3,7 @@
 from amplify import VariableGenerator
 gen = VariableGenerator()
 q = gen.array("Binary", 2146) # 二値変数
-Cardi = 1000 # データの読み込み数
+Cardi = 2000 # データの読み込み数
 
 
 
@@ -122,8 +122,29 @@ for key in monthly_data.keys():
             res_last = requests.get(f"{url}?code={code_2022[i]}&date={date_last}", headers=headers)
             data_first = res_first.json()
             data_last = res_last.json()
+            if (not data_first["daily_quotes"]) or (not data_last["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
+                if key == next(iter(monthly_data)):
+                    print(code_2022[i], "はありません、最初なので銘柄コードのみ削除します")
+                else:
+                    print(code_2022[i], "はありません、2ヶ月目以降なのでデータも削除します")
+                    for key_past in monthly_data.keys(): #これまでのkeyのデータ削除
+                        if(key == key_past):
+                            break
+                        else:
+                            data_close_first[key_past].pop(i)
+                            data_close_last[key_past].pop(i)
+                # print(data_first)
+                code_2022.pop(i)
+                # print(code_2022[i-1], code_2022[i], code_2022[i+1])
+                i = i-1 #popすると後ろの要素は前にシフトされるから
+                count = count + 1
+                non_data = non_data + 1
+            
+            else:
+                data_close_first[key].append(data_first["daily_quotes"][0]["AdjustmentClose"])
+                data_close_last[key].append(data_last["daily_quotes"][0]["AdjustmentClose"])
         except Exception as e:
-            print(f"株価読み込みで予期しないエラーが発生しました!!!!!!!: {e}")
+            print(f"株価読み込みで予期しないエラーが発生しました! ", i, "番目, 銘柄は", code_2022[i]," {e}")
             if key == next(iter(monthly_data)):
                 print(code_2022[i], "はありません、最初なので銘柄コードのみ削除します")
             else:
@@ -142,27 +163,6 @@ for key in monthly_data.keys():
             continue
 
         
-        if (not data_first["daily_quotes"]) or (not data_last["daily_quotes"]): # Jquantsに銘柄コードがない時の例外処理
-            if key == next(iter(monthly_data)):
-                print(code_2022[i], "はありません、最初なので銘柄コードのみ削除します")
-            else:
-                print(code_2022[i], "はありません、2ヶ月目以降なのでデータも削除します")
-                for key_past in monthly_data.keys(): #これまでのkeyのデータ削除
-                    if(key == key_past):
-                        break
-                    else:
-                        data_close_first[key_past].pop(i)
-                        data_close_last[key_past].pop(i)
-            # print(data_first)
-            code_2022.pop(i)
-            # print(code_2022[i-1], code_2022[i], code_2022[i+1])
-            i = i-1 #popすると後ろの要素は前にシフトされるから
-            count = count + 1
-            non_data = non_data + 1
-        
-        else:
-            data_close_first[key].append(data_first["daily_quotes"][0]["AdjustmentClose"])
-            data_close_last[key].append(data_last["daily_quotes"][0]["AdjustmentClose"])
     Cardi_rep = Cardi_rep - non_data
         
 
@@ -296,6 +296,7 @@ print("len(volume_ave) :", len(volume_ave))
 
 i = -1
 count_rep = 0
+real_cardi_rep = real_cardi
 while count_rep < real_cardi_rep:
     count_rep = count_rep + 1
     i = i + 1

@@ -1,5 +1,9 @@
 #Flaskとrender_template（HTMLを表示させるための関数）をインポート
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
+import pandas as pd
+import io
+
+give_data = []
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
@@ -208,7 +212,7 @@ def submit():
         else:
             count_volume += q[i] * false
             # print("20万以下 : ", i)
-    # f += 0.1 * (Cardi_want - count_volume) ** 2
+    f += 0.1 * (Cardi_want - count_volume) ** 2
 
 
     # 4. 産業の構成割合制約
@@ -314,10 +318,16 @@ def submit():
 
     # 産業分野の割合、予算合計、流動性の結果計算
     dict_sector_p_res = {}
-    for select_i in selected_indices:
-        Budget_sum += stock_price_np[select_i][0]
-        volume_result.append(volume_ave_np[0][select_i] / 1000)
-        add_to_dict(sector[0][select_i], dict_sector_p_res, 1)
+    i = 0
+    for item in selected_indices:
+        Budget_sum += stock_price_np[item][0]
+        volume_result.append(volume_ave_np[0][item] / 1000)
+        add_to_dict(sector[0][item], dict_sector_p_res, 1)
+        # result.htmlに渡すデータ準備
+        give_data.append([code_2022_np[0][item], sector[0][item]])
+        i += 1
+
+
 
     import unicodedata
     def width_adjusted_string(s, width):
@@ -382,4 +392,19 @@ def submit():
                            lamda3=lamda3, position3=position3,
                            lamda4=lamda4, 
                            tracking_error22 = math.sqrt(result.best.objective)*100,
-                           tracking_error23 = math.sqrt(f_23) * 100)
+                           tracking_error23 = math.sqrt(f_23) * 100,
+                           count_q_equals_one = count_q_equals_one,
+                           lest_of_money = Budget_want - Budget_sum,
+                           give_data = give_data)
+
+
+@app.route('/download')
+def download():
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        # あと銘柄名、pfにおける割合、時価総額も表にしたい
+        df = pd.DataFrame(give_data, columns=['銘柄コード', '産業分野'])
+        df.to_excel(writer, index=False, sheet_name='データ')
+    output.seek(0)
+
+    return send_file(output, as_attachment=True, download_name='data.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

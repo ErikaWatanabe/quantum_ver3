@@ -4,24 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>受け取ったデータ</title>
+    <!-- <link rel="stylesheet" href="result.css"> -->
+    <link rel="stylesheet" href="../static/css/result.css">
 </head>
 <body>
-    <h2>受け取ったデータ</h2>
-    <p>カーディナリティ制約 --- λ1:{{ lamda1 }} , C:{{ position1 }}</p>
-    <p>予算制約 ---------------- λ2:{{ lamda2 }} , B:{{ position2 }}</p>
-    <p>流動性制約 ------------- λ3:{{ lamda3 }} , V:{{ position3 }}</p>
-    <p>産業の構成割合制約 ----- λ4:{{ lamda4 }}</p>
+    <a href="/">＜＜　フォームに戻る</a>
+    <h2>最適化の結果</h2>
+    <div class = "flex">
+        <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ" style="width: 50%; height: auto;">
+        <div class="constraints">
+            <h2>設定した制約条件</h2>
+            <ul>
+                <li>カーディナリティ制約（λ1:{{ lamda1 }}　C:{{ position1 }}）</li>
+                <li>予算制約（λ2:{{ lamda2 }}　B:{{ position2 }}）</li>
+                <li>流動性制約（λ3:{{ lamda3 }}　V:{{ position3 }}）</li>
+                <li>産業の構成割合制約（λ4:{{ lamda4 }}）</li>
+            </ul>
+            <p>選択された銘柄数:{{count_q_equals_one}}</p> 
+            <p>残資金:{{lest_of_money}}</p>
+            <p class="TrackingError">TrackingError(2023) : {{tracking_error23}}</p>
+        </div>
+    </div>
     <br><br>
-
-    <h2>結果グラフ</h2>
-    <!-- <img src="http://127.0.0.1:5000/submit/static/portfolio_graph.png" alt="ポートフォリオグラフ"> -->
-    <!-- <img src="../../static/portfolio_graph.png" alt="ポートフォリオグラフ"> -->
-    <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ" style="width: 50%; height: auto;">
-    <!-- <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ"> -->
-
-    <p>TrackingError(3年間) : {{tracking_error22}}</p>
-    <p>TrackingError(2023) : {{tracking_error23}}</p>
-    <br>
-    <a href="/">フォームに戻る</a>
+    <a href="/download">Excelファイルとしてダウンロード</a>
+    <br><br>
+    <table>
+        <thead>
+            <tr>
+                <th>銘柄コード</th>
+                <th>産業分野</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in give_data %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

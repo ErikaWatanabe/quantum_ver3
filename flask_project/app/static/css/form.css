@@ -1,22 +1,27 @@
 /* 全体のフォームコンテナを横並びにする */
-.form-container {
+/* .form-container {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
-}
+} */
 
 /* 各グループ（名前と役職のセット）を縦並びにする */
-.form-group {
+/* .form-group {
     display: flex;
     flex-direction: column;
     margin-right: 20px;
-}
+} */
 
 /* ラベルと入力フィールドの間隔を調整 */
 label {
     margin-bottom: 5px;
 }
 
-input[type="text"] {
-    width: 150px;  /* 入力フィールドの幅を指定 */
+body{
+    padding-top: 3%;
+    padding-left: 5%;
+    padding-right: 5%;
 }
+
+
+
