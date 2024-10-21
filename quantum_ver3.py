@@ -18,6 +18,7 @@ with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 email = config['email']
 api_password = config['api_password']
+token = config['token']
 
 mail_password={"mailaddress":email, "password":api_password}
 r_ref = requests.post("https://api.jquants.com/v1/token/auth_user", data=json.dumps(mail_password))
@@ -221,7 +222,7 @@ for key in dict_sector_t.keys():
 
 from amplify import FixstarsClient
 client = FixstarsClient()
-client.token = "AE/4lBXnJAF4R5QTfHDa9pK1rmv0Fa6G7H8" 
+client.token = token 
 client.parameters.timeout = 1000
 from amplify import solve
 result = solve(f, client)
