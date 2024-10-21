@@ -32,7 +32,12 @@ for i in range(len(lst)):
 import requests
 import json
 
-mail_password={"mailaddress":"e.cos2612@outlook.jp", "password":"26Erika12122"}
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
+email = config['email']
+api_password = config['api_password']
+
+mail_password={"mailaddress":email, "password":api_password}
 r_ref = requests.post("https://api.jquants.com/v1/token/auth_user", data=json.dumps(mail_password))
 RefreshToken = r_ref.json()["refreshToken"]
 r_token = requests.post(f"https://api.jquants.com/v1/token/auth_refresh?refreshtoken={RefreshToken}")
@@ -245,6 +250,7 @@ volume_ave = []
 url_sector = "https://api.jquants.com/v1/listed/info"
 url_numstock = "https://api.jquants.com/v1/fins/statements"
 sector_list = []
+company_name_list = []
 code_list = []
 numstock_list = []
 code_list_23 = []
@@ -263,6 +269,9 @@ while count_rep < real_cardi_rep:
     data_sector = res_sector.json()
     sector = [quote["Sector17CodeName"] for quote in data_sector["info"]]
     sector_list.append(sector[0])
+    company_name = [quote["CompanyName"] for quote in data_sector["info"]]
+    company_name_list.append(company_name[0])
+
 
     # 取引高（Volume）の取得
     res_volume = requests.get(f"{url}?code={code_2022[i]}&from={from_vol}&to={to_vol}", headers=headers)
@@ -290,7 +299,7 @@ while count_rep < real_cardi_rep:
         # real_cardi_rep = real_cardi_rep - 1
         volume_flag = True
 
-print("********** 産業分野、取引高の読み込み終了 **********")
+print("********** 産業分野、取引高、銘柄名の読み込み終了 **********")
 print("real_cardi :", real_cardi)
 print("len(volume_ave) :", len(volume_ave))
 
@@ -360,7 +369,11 @@ with open (f"Cardinality_{Cardi}/volume_{Cardi}.csv", "w", newline='') as f:
 with open (f"Cardinality_{Cardi}/sector_{Cardi}.csv", "w", newline='', encoding='utf-8') as f:
     writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
     writer.writerow(sector_list)
-    
+
+with open (f"Cardinality_{Cardi}/company_name_{Cardi}.csv", "w", newline='', encoding='utf-8') as f:
+    writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    writer.writerow(company_name_list)
+
 with open (f"Cardinality_{Cardi}/code_{Cardi}.csv", "w", newline='', encoding='utf-8') as f:
     writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
     writer.writerow(code_list)

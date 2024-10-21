@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../static/css/result.css">
 </head>
 <body>
-    <a href="/">＜＜　フォームに戻る</a>
+    <a href="/return_to_form">＜＜　フォームに戻る</a>
     <h2>最適化の結果</h2>
     <div class = "flex">
         <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ" style="width: 50%; height: auto;">
@@ -28,11 +28,33 @@
     <br><br>
     <a href="/download">Excelファイルとしてダウンロード</a>
     <br><br>
-    <table>
+    <table  id="dataTable">
         <thead>
             <tr>
-                <th>銘柄コード</th>
-                <th>産業分野</th>
+                <th>銘柄コード
+                    <div class="sort-buttons">
+                        <button class="sort-button" onclick="sortTable(0, 'asc')">▲</button>
+                        <button class="sort-button" onclick="sortTable(0, 'desc')">▼</button>
+                    </div>
+                </th>
+                <th>銘柄名
+                    <div class="sort-buttons">
+                        <button class="sort-button" onclick="sortTable(1, 'asc')">▲</button>
+                        <button class="sort-button" onclick="sortTable(1, 'desc')">▼</button>
+                    </div>
+                </th>
+                <th>産業分野
+                    <div class="sort-buttons">
+                        <button class="sort-button" onclick="sortTable(2, 'asc')">▲</button>
+                        <button class="sort-button" onclick="sortTable(2, 'desc')">▼</button>
+                    </div>
+                </th>
+                <th>構成割合(%)
+                    <div class="sort-buttons">
+                        <button class="sort-button" onclick="sortTable(3, 'asc')">▲</button>
+                        <button class="sort-button" onclick="sortTable(3, 'desc')">▼</button>
+                    </div>
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -40,9 +62,41 @@
             <tr>
                 <td>{{ row[0] }}</td>
                 <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <script>
+        function sortTable(columnIndex, order) {
+            var table, rows, switching, i, x, y, shouldSwitch, switchCount = 0;
+            table = document.getElementById("dataTable");
+            var tbody = table.tBodies[0];  // tbodyを取得
+
+            var rowsArray = Array.from(tbody.rows);  // tbody内の行を配列に変換
+
+            // 並び替え
+            rowsArray.sort(function (a, b) {
+                var x = a.cells[columnIndex].innerText.toLowerCase();
+                var y = b.cells[columnIndex].innerText.toLowerCase();
+
+                if (order === 'asc') {
+                    return x > y ? 1 : -1;
+                } else {
+                    return x < y ? 1 : -1;
+                }
+            });
+
+            // 並び替えた結果をtbodyに追加
+            rowsArray.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+    
+
+    </script>
+
 </body>
 </html>

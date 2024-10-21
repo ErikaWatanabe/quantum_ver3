@@ -1,5 +1,5 @@
 #Flaskとrender_template（HTMLを表示させるための関数）をインポート
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for, make_response
 import pandas as pd
 import io
 
@@ -11,7 +11,21 @@ app = Flask(__name__)
 #「/」へアクセスがあった場合に、"Hello World"の文字列を返す
 @app.route("/")
 def hello():
-    return render_template("form.html")
+    # return render_template("form.html")
+    response = make_response(render_template('form.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/return_to_form')
+def return_to_form():
+    # form.htmlにリダイレクトしつつキャッシュを無効化
+    response = make_response(render_template('form.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -26,7 +40,7 @@ def submit():
 
 
     # 1. 変数の初期設定等
-    Cardi = 1000 # データの読み込み数
+    Cardi = 2000 # データの読み込み数
     # Cardi_want = position1 # カーディナリティ制約
     # Budget_want = position2 # 予算制約
     # Volume_want = position3 # 流動性制約
@@ -40,7 +54,11 @@ def submit():
     import requests
     import json
 
-    mail_password={"mailaddress":"e.cos2612@outlook.jp", "password":"26Erika12122"}
+    with open('flask_project/app/config.json', 'r') as config_file:
+        config = json.load(config_file)
+    email = config['email']
+    api_password = config['api_password']
+    mail_password={"mailaddress":email, "password":api_password}
     r_ref = requests.post("https://api.jquants.com/v1/token/auth_user", data=json.dumps(mail_password))
     RefreshToken = r_ref.json()["refreshToken"]
     r_token = requests.post(f"https://api.jquants.com/v1/token/auth_refresh?refreshtoken={RefreshToken}")
@@ -153,6 +171,13 @@ def submit():
         csv_reader = csv.reader(file)
         for row in csv_reader:
             sector.append(row)
+    
+    company_name = []
+    data_file_path = os.path.join(os.path.dirname(__file__), f'../data/Cardinality_{Cardi}/company_name_{Cardi}.csv')
+    with open(data_file_path, 'r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            company_name.append(row)
     
     #2.5. 重みの計算
     weight = []
@@ -277,12 +302,15 @@ def submit():
         pr_array.append(pr)
         tp_array.append(topix_first_np[0][i])
 
+    count_same = 0
     for item in selected_indices:
         for i in range(len(code_2023_np[0])):
             if(code_2022_np[0][item] == code_2023_np[0][i]):
                 selected_indices_2023.append(i)
+                count_same += 1
                 # print(code_2022_np[0][item], code_2023_np[0][i])
                 continue
+
 
 
     over_return_23 = []
@@ -315,20 +343,29 @@ def submit():
     f_23 = mult_23 / (len(over_return_23) - 1)
 
 
+    sum_seleceted_weight_23 = 0
+    for item in selected_indices_2023:
+        sum_seleceted_weight_23 += weight_23[item]
 
     # 産業分野の割合、予算合計、流動性の結果計算
     dict_sector_p_res = {}
     i = 0
+    count_equal = 0
+    give_data = []
     for item in selected_indices:
-        Budget_sum += stock_price_np[item][0]
-        volume_result.append(volume_ave_np[0][item] / 1000)
-        add_to_dict(sector[0][item], dict_sector_p_res, 1)
-        # result.htmlに渡すデータ準備
-        give_data.append([code_2022_np[0][item], sector[0][item]])
-        i += 1
-
-
-
+        for item_23 in selected_indices_2023:
+            if(code_2022_np[0][item] == code_2023_np[0][item_23]):
+                count_equal += 1
+                Budget_sum += stock_price_np[item][0]
+                volume_result.append(volume_ave_np[0][item] / 1000)
+                add_to_dict(sector[0][item], dict_sector_p_res, 1)
+                # result.htmlに渡すデータ準備
+                # ratio = round((weight_23[item_23]/sum_seleceted_weight_23)*100, 2)
+                ratio = (weight_23[item_23]/sum_seleceted_weight_23) * 100
+                give_data.append([int(code_2022_np[0][item]), company_name[0][item], sector[0][item], float(round(ratio, 2))])
+                i += 1
+                break
+        
     import unicodedata
     def width_adjusted_string(s, width):
         count = 0
@@ -361,29 +398,39 @@ def submit():
     import japanize_matplotlib
     from matplotlib.ticker import MaxNLocator
     japanize_matplotlib.japanize()
+    # graph_date = ["2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09",
+    #              "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03"]
+    graph_date = ["2023-4", "5", "6", "7", "8", "9",
+                 "10", "11", "12", "2024-1", "2", "3"]
 
-    pr_sum = pr_array + pr_array_23
-    tp_sum = tp_array + tp_array_23
-    fig3, ax1 = plt.subplots()
-    ax1.set_title('過去3年のTEを最小化するようなポートフォリオ')
-    ax1.plot(tp_sum, label='TOPIX', color='blue')
+    fig2, ax1 = plt.subplots()
+    ax1.set_title(f'1年後のTOPIXとポートフォリオ比較 C={Cardi_want}')
+    ax1.plot(tp_array_23, label='TOPIX', color='blue')
     ax1.set_ylabel('TOPIX', color='blue')
     ax1.tick_params(axis='y', labelcolor='blue')
+
     ax2 = ax1.twinx()
-    ax2.plot(pr_sum, label='Portfolio', color='green')
+    ax2.plot(pr_array_23, label='Portfolio', color='green')
     ax2.set_ylabel('ポートフォリオ', color='green')
     ax2.tick_params(axis='y', labelcolor='green')
+    plt.xticks(ticks=range(len(graph_date)), labels=graph_date)
+
+    # pr_sum = pr_array + pr_array_23
+    # tp_sum = tp_array + tp_array_23
+    # fig3, ax1 = plt.subplots()
+    # ax1.set_title('過去3年のTEを最小化するようなポートフォリオ')
+    # ax1.plot(tp_sum, label='TOPIX', color='blue')
+    # ax1.set_ylabel('TOPIX', color='blue')
+    # ax1.tick_params(axis='y', labelcolor='blue')
+    # ax2 = ax1.twinx()
+    # ax2.plot(pr_sum, label='Portfolio', color='green')
+    # ax2.set_ylabel('ポートフォリオ', color='green')
+    # ax2.tick_params(axis='y', labelcolor='green')
 
     plt.savefig('flask_project/app/static/portfolio_graph.png', dpi=300, bbox_inches='tight')
     # plt.savefig('static/portfolio_graph.png', dpi=300, bbox_inches='tight')
 
     # plt.show()
-
-
-
-
-
-
 
     # result.html にデータを渡して表示する
     return render_template('result.html', 
@@ -403,7 +450,8 @@ def download():
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         # あと銘柄名、pfにおける割合、時価総額も表にしたい
-        df = pd.DataFrame(give_data, columns=['銘柄コード', '産業分野'])
+        # df = pd.DataFrame(give_data, columns=['銘柄コード', '銘柄名', '産業分野'])
+        df = pd.DataFrame(give_data, columns=['銘柄コード', '銘柄名', '産業分野', '構成割合'])
         df.to_excel(writer, index=False, sheet_name='データ')
     output.seek(0)
 

@@ -14,8 +14,12 @@ start_time = time.time()
 # 3. 1. Jquantsから株価データを取得
 import requests
 import json
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
+email = config['email']
+api_password = config['api_password']
 
-mail_password={"mailaddress":"e.cos2612@outlook.jp", "password":"26Erika12122"}
+mail_password={"mailaddress":email, "password":api_password}
 r_ref = requests.post("https://api.jquants.com/v1/token/auth_user", data=json.dumps(mail_password))
 RefreshToken = r_ref.json()["refreshToken"]
 r_token = requests.post(f"https://api.jquants.com/v1/token/auth_refresh?refreshtoken={RefreshToken}")
