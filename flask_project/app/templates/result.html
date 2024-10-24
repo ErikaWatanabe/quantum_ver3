@@ -6,27 +6,77 @@
     <title>受け取ったデータ</title>
     <!-- <link rel="stylesheet" href="result.css"> -->
     <link rel="stylesheet" href="../static/css/result.css">
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
 </head>
 <body>
-    <a href="/return_to_form">＜＜　フォームに戻る</a>
+    <header>
+        <h1>インデックスファンドの銘柄決定</h1>
+    </header>
+    <div class="contents">
+    <a href="/return_to_form" class="return_button">フォームに戻る</a><br><br>
     <h2>最適化の結果</h2>
     <div class = "flex">
         <img src="{{ url_for('static', filename='portfolio_graph.png') }}" alt="ポートフォリオグラフ" style="width: 50%; height: auto;">
         <div class="constraints">
-            <h2>設定した制約条件</h2>
-            <ul>
-                <li>カーディナリティ制約（λ1:{{ lamda1 }}　C:{{ position1 }}）</li>
-                <li>予算制約（λ2:{{ lamda2 }}　B:{{ position2 }}）</li>
-                <li>流動性制約（λ3:{{ lamda3 }}　V:{{ position3 }}）</li>
-                <li>産業の構成割合制約（λ4:{{ lamda4 }}）</li>
-            </ul>
-            <p>選択された銘柄数:{{count_q_equals_one}}</p> 
-            <p>残資金:{{lest_of_money}}</p>
-            <p class="TrackingError">TrackingError(2023) : {{tracking_error23}}</p>
-        </div>
+            <h3>設定した制約条件</h3>
+            <table id="table_con">
+                <tr>
+                    <th>カーディナリティ制約</th>
+                    <td>λ1</td>
+                    <td>{{ lamda1 }}</td>
+                    <td>C</td>
+                    <td>{{ position1 }}</td>
+                </tr>
+                <tr>
+                    <th>予算制約</th>
+                    <td>λ2</td>
+                    <td>{{ lamda2 }}</td>
+                    <td>B</td>
+                    <td>{{ position2 }}</td>
+                </tr>
+                <tr>
+                    <th>流動性制約</th>
+                    <td>λ3</td>
+                    <td>{{ lamda3 }}</td>
+                    <td>V</td>
+                    <td>{{ position3 }}</td>
+                </tr>
+                <tr>
+                    <th>産業の構成割合制約</th>
+                    <td>λ4</td>
+                    <td>{{ lamda4 }}</td>
+                </tr>
+            </table><br>
+            <!-- <p>選択された銘柄数:{{count_q_equals_one}}</p> 
+            <p>残資金:{{lest_of_money}}</p> -->
+            <table id="table_te">
+                <tr>
+                    <th>TrackingError</th>
+                    <td class="tracking_error">{{tracking_error23}} %</td>
+                </tr>
+            </table>
+            </div>
     </div>
     <br><br>
-    <a href="/download">Excelファイルとしてダウンロード</a>
+    <hr>
+    <br><br>
+    <a href="/download" class="btn-border">Excelファイル ダウンロード</a>
+        <!-- <div class="arow-icon">
+            <svg class="down-arrow" xmlns="http://www.w3.org/2000/svg" height="12" viewBox="0 -960 960 960" width="14"><path d="M480-80 200-360l56-56 184 183v-647h80v647l184-184 56 57L480-80Z"/></svg>
+            <span class="bottom-icon"></span>
+          </div> -->
+    
+
+    <!-- <div class="link">
+        <div class="download-btn">
+            <a href="/download">Excelファイルとしてダウンロード</a>
+          <div class="arow-icon">
+            <svg class="down-arrow" xmlns="http://www.w3.org/2000/svg" height="12" viewBox="0 -960 960 960" width="14"><path d="M480-80 200-360l56-56 184 183v-647h80v647l184-184 56 57L480-80Z"/></svg>
+            <span class="bottom-icon"></span>
+          </div>
+        </div>
+      </div> -->
+
     <br><br>
     <table  id="dataTable">
         <thead>
@@ -68,6 +118,9 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+
+
     <script>
         function sortTable(columnIndex, order) {
             var table, rows, switching, i, x, y, shouldSwitch, switchCount = 0;

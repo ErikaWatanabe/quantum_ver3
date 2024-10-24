@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>インデックスファンドの銘柄決定</title>
     <link rel="stylesheet" href="../static/css/form.css">
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
 </head>
 <body>
-    <h1>インデックスファンドの銘柄決定</h1>
+    <header>
+        <h1>インデックスファンドの銘柄決定</h1>
+    </header>
+    <div class="contents">
     <h2>制約条件を設定してください</h2>
     <br>
     <form action="/submit" method="post">
@@ -15,52 +19,54 @@
             <!-- 1人目 -->
             <h3>カーディナリティ制約</h3>
             <div class="form-group">
-                <label for="lamda1">λ1:</label>
-                <input type="text" id="lamda1" name="lamda1" value = 0.1 required>
-
-                <label for="position1">　　　組み入れたい銘柄数:</label>
-                <input type="text" id="position1" name="position1" value = 100 required>
-            </div><br>
+                <div class="constraints">
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="lamda1">λ1:</label>
+                    <input type="text" id="lamda1" name="lamda1" value = 0.1 required>
+                </label></div>
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="position1">組み入れたい銘柄数:</label>
+                    <input type="text" id="position1" name="position1" value = 100 required>
+                </label></div></div><br>
 
             <!-- 2人目 -->
             <h3>予算の制約</h3>
             <div class="form-group">
-                <label for="lamda2">λ2:</label>
-                <input type="text" id="lamda2" name="lamda2" value = 0.1 required>
-
-                <label for="position2">　　　予算:</label>
-                <input type="text" id="position2" name="position2" value = 1000000 required>
-            </div><br>
+                <div class="constraints">
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="lamda2">λ2:</label>
+                    <input type="text" id="lamda2" name="lamda2" value = 0.1 required>
+                </label></div>
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="position2">予算:</label>
+                    <input type="text" id="position2" name="position2" value = 1000000 required>
+                </label></div></div><br>
 
             <!-- 3人目 -->
             <h3>流動性制約</h3>
             <div class="form-group">
-                <label for="lamda3">λ3:</label>
-                <input type="text" id="lamda3" name="lamda3" value = 0.1 required>
-
-                <label for="position3">　　　一日の平均取引高:</label>
-                <input type="text" id="position3" name="position3" value = 10000 required>
-            </div><br>
+                <div class="constraints">
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="lamda3">λ3:</label>
+                    <input type="text" id="lamda3" name="lamda3" value = 0.1 required>
+                </label></div>
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="position3">一日の平均取引高:</label>
+                    <input type="text" id="position3" name="position3" value = 10000 required>
+                </label></div></div><br>
 
             <!-- 4人目 -->
             <h3>産業分野の構成割合制約</h3>
             <div class="form-group">
-                <label for="lamda4">λ4:</label>
-                <input type="text" id="lamda4" name="lamda4" value = 0.1 required>
-            </div><br>
+                <div class="cp_iptxt"><label class="ef">
+                    <label for="lamda4">λ4:</label>
+                    <input type="text" id="lamda4" name="lamda4" value = 0.1 required>
+                </label></div></div><br>
         </div>
 
-        <input type="submit" value="最適化を行う">
+        <input type="submit" class="btn-border" value="最適化を行う">
     </form>
-
-    
-    <!-- <label for="position2">　　　予算:</label>
-    <label for="position2">　　　予算:</label>
-    <label for="position2">　　　予算:</label>
-    <input type="text" id="lamda2" name="lamda2" value = 0.1 required>
-    <input type="text" id="lamda2" name="lamda2" value = 0.1 required> -->
-
-    
+    </div>
 
 </body>
 </html>

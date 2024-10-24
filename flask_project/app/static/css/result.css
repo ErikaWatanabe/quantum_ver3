@@ -1,4 +1,35 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+
 body{
+    margin-top: 0%;
+    margin-left: 0%;
+    margin-right: 0%;
+    background-color: #F5F5F5;
+    font-family: "游ゴシック";
+}
+
+
+header{
+    background-color: #4D606E;
+    color: white;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    padding-left: 3%;
+}
+
+a{
+    text-decoration: none;
+    /* color: black; */
+}
+
+a:visited {
+    /* color: black; */
+}
+
+.contents{
     padding-top: 3%;
     padding-left: 5%;
     padding-right: 5%;
@@ -16,24 +47,194 @@ body{
     margin-bottom: auto;
 }
 
-.TrackingError{
-    font-weight: bold;
-    color: brown;
-}
-
-table {
+#dataTable {
     border-collapse: collapse;
     width: 100%;
 }
 
-th, td {
+#dataTable th, #dataTable td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
 }
 
-th {
+#dataTable th {
     background-color: #f2f2f2;
 }
 
+.return_button{
+    position: relative;
+    padding-left: 30px;
+    padding-right: 50px;
+    color: #4D606E;
+}
 
+.return_button:before {
+    position: absolute;
+    content: '';
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 0;
+    border: none;
+    border-left: solid 15px transparent;
+    border-bottom: solid 15px #4D606E;
+}
+
+.return_button:after {
+    position: absolute;
+    content: '';
+    bottom: -3px;
+    left: 10px;
+    width: 100%;
+    border-bottom: solid 1px #4D606E;
+}
+
+img {
+    border: 2px solid #4D606E; /* 2ピクセルの黒い線で囲む */
+}
+
+.tracking_error{
+    color: #3FBAC2;
+    font-weight: bold;
+    padding-left: 10px;
+}
+
+#table_te{
+    /* border: 3px solid #3FBAC2; */
+    padding: 8px;
+    text-align: left;
+    font-size: 20px;
+}
+
+#table_con {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#table_con th, #table_con td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#table_con th {
+    background-color: #f2f2f2;
+}
+
+.download-btn {
+    width: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    /* border: 1px solid #000; */
+    cursor: pointer;
+    transition: 0.8s;
+    padding: 10px;
+    background-color: #568838;
+    color: #F5F5F5;
+}
+    
+.download-btn:hover {
+    background-color: #F5F5F5;
+    border: 1px solid #fff;
+    color: #568838;
+}
+    
+.download-btn a[download] {
+    display: block;
+    padding: 15px 0;
+    color: #F5F5F5;
+}
+    
+.download-btn:hover a[download] {
+    color: #fff;
+}
+    
+.arow-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+    
+.down-arrow {
+    fill: #aaa;
+}
+    
+.bottom-icon {
+    width: 14px;
+    height: 3px;
+    border-bottom: 1px solid #aaa;
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+}
+    
+.download-btn:hover .bottom-icon {
+    border-bottom: 1px solid #fff;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #fff;
+}
+    
+.download-btn:hover .down-arrow {
+    fill: #fff;
+    animation: slide-in-top 0.3s linear both;
+}
+    
+@keyframes slide-in-top {
+    0% {
+    transform: translateY(-10px);
+    opacity: 0;
+    }
+    
+    100% {
+    transform: translateY(0);
+    opacity: 1;
+    }
+}
+
+.btn-border {
+    border-radius: 0;
+    border: 2px solid #568838;
+    color: white;
+    background: #568838;
+    width: 40%;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 16px;
+    cursor : pointer;
+}
+  
+.btn-border:hover {
+    border-radius: 0;
+    border: 2px solid #568838;
+    background-color: #F5F5F5;
+    color: #568838;
+}
+
+h3 {
+    position: relative;
+    /* background: #4D606E; */
+    padding: 0.25em 0.5em;
+    border-left: solid 2em #3FBAC2;
+    width: 70%;
+    /* color: white; */
+}
+
+h3:before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f303";
+    position: absolute;
+    padding: 0em;
+    color: white;
+    font-weight: 900;
+    left: -1.35em;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+}

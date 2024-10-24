@@ -407,27 +407,16 @@ def submit():
 
     fig2, ax1 = plt.subplots()
     ax1.set_title(f'1年後のTOPIXとポートフォリオ比較 C={Cardi_want}')
-    ax1.plot(tp_array_23, label='TOPIX', color='blue')
-    ax1.set_ylabel('TOPIX', color='blue')
-    ax1.tick_params(axis='y', labelcolor='blue')
+    ax1.plot(tp_array_23, label='TOPIX', color='#4D606E')
+    ax1.set_ylabel('TOPIX', color='#4D606E')
+    ax1.tick_params(axis='y', labelcolor='#4D606E')
 
     ax2 = ax1.twinx()
-    ax2.plot(pr_array_23, label='Portfolio', color='green')
-    ax2.set_ylabel('ポートフォリオ', color='green')
-    ax2.tick_params(axis='y', labelcolor='green')
+    ax2.plot(pr_array_23, label='Portfolio', color='#3FBAC2')
+    ax2.set_ylabel('ポートフォリオ', color='#3FBAC2')
+    ax2.tick_params(axis='y', labelcolor='#3FBAC2')
     plt.xticks(ticks=range(len(graph_date)), labels=graph_date)
 
-    # pr_sum = pr_array + pr_array_23
-    # tp_sum = tp_array + tp_array_23
-    # fig3, ax1 = plt.subplots()
-    # ax1.set_title('過去3年のTEを最小化するようなポートフォリオ')
-    # ax1.plot(tp_sum, label='TOPIX', color='blue')
-    # ax1.set_ylabel('TOPIX', color='blue')
-    # ax1.tick_params(axis='y', labelcolor='blue')
-    # ax2 = ax1.twinx()
-    # ax2.plot(pr_sum, label='Portfolio', color='green')
-    # ax2.set_ylabel('ポートフォリオ', color='green')
-    # ax2.tick_params(axis='y', labelcolor='green')
 
     plt.savefig('flask_project/app/static/portfolio_graph.png', dpi=300, bbox_inches='tight')
     # plt.savefig('static/portfolio_graph.png', dpi=300, bbox_inches='tight')
@@ -441,7 +430,7 @@ def submit():
                            lamda3=lamda3, position3=position3,
                            lamda4=lamda4, 
                            tracking_error22 = math.sqrt(result.best.objective)*100,
-                           tracking_error23 = math.sqrt(f_23) * 100,
+                           tracking_error23 = float(round(math.sqrt(f_23) * 100, 2)),
                            count_q_equals_one = count_q_equals_one,
                            lest_of_money = Budget_want - Budget_sum,
                            give_data = give_data)
