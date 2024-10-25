@@ -1,5 +1,5 @@
 #Flaskとrender_template（HTMLを表示させるための関数）をインポート
-from flask import Flask, render_template, request, send_file, redirect, url_for, make_response
+from flask import Flask, render_template, request, send_file, redirect, url_for, make_response, session
 import pandas as pd
 import io
 
@@ -7,46 +7,72 @@ give_data = []
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
-#「/」へアクセスがあった場合に、"Hello World"の文字列を返す
-@app.route("/")
-def hello():
-    # return render_template("form.html")
-    response = make_response(render_template('form.html'))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+
+@app.route("/", methods=['GET', 'POST'])
+def form():
+    if request.method == 'POST':
+        # フォームデータをセッションに保存
+        session['lamda1'] = request.form.get('lamda1')
+        session['lamda2'] = request.form.get('lamda2')
+        session['lamda3'] = request.form.get('lamda3')
+        session['lamda4'] = request.form.get('lamda4')
+        session['position1'] = request.form.get('position1')
+        session['position2'] = request.form.get('position2')
+        session['position3'] = request.form.get('position3')
+        return redirect(url_for('submit'))
+
+    # 1回目は初期値、2回目以降はセッションからデータを取得
+    lamda1 = session.get('lamda1', '0.1')
+    lamda2 = session.get('lamda2', '0.1')
+    lamda3 = session.get('lamda3', '0.1')
+    lamda4 = session.get('lamda4', '0.1')
+    position1 = session.get('position1', '100')
+    position2 = session.get('position2', '100000')
+    position3 = session.get('position3', '100000')
+
+    return render_template('form.html', lamda1=lamda1, lamda2=lamda2,
+                                        lamda3=lamda3, lamda4=lamda4,
+                                        position1=position1, position2=position2,
+                                        position3=position3)
 
 @app.route('/return_to_form')
 def return_to_form():
-    # form.htmlにリダイレクトしつつキャッシュを無効化
     response = make_response(render_template('form.html'))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
+    
     return response
 
-@app.route('/submit', methods=['POST'])
+@app.route('/submit', methods=['GET', 'POST'])
 def submit():
+    if request.method == 'POST':
+        # ここでセッションに保存
+        session['lamda1'] = request.form.get('lamda1')
+        session['lamda2'] = request.form.get('lamda2')
+        session['lamda3'] = request.form.get('lamda3')
+        session['lamda4'] = request.form.get('lamda4')
+        session['position1'] = request.form.get('position1')
+        session['position2'] = request.form.get('position2')
+        session['position3'] = request.form.get('position3')
+
     # フォームから送信されたデータを取得
-    lamda1 = request.form['lamda1']
-    position1 = request.form['position1']
-    lamda2 = request.form['lamda2']
-    position2 = request.form['position2']
-    lamda3 = request.form['lamda3']
-    position3 = request.form['position3']
-    lamda4 = request.form['lamda4']
+    lamda1 = float(session.get('lamda1', 0.1))
+    position1 = int(session.get('position1', '100'))
+    lamda2 = float(session.get('lamda2', 0.1))
+    position2 = int(session.get('position2', '100000'))
+    lamda3 = float(session.get('lamda3', 0.1))
+    position3 = int(session.get('position3', '100000'))
+    lamda4 = float(session.get('lamda4', 0.1))
 
 
     # 1. 変数の初期設定等
     Cardi = 2000 # データの読み込み数
-    # Cardi_want = position1 # カーディナリティ制約
-    # Budget_want = position2 # 予算制約
-    # Volume_want = position3 # 流動性制約
-    Cardi_want = 100 # カーディナリティ制約
-    Budget_want = 600000 # 予算制約
-    Volume_want = 100000 # 流動性制約
+    Cardi_want = int(position1) # カーディナリティ制約
+    Budget_want = int(position2) # 予算制約
+    Volume_want = int(position3) # 流動性制約
+    # Cardi_want = 100 # カーディナリティ制約
+    # Budget_want = 600000 # 予算制約
+    # Volume_want = 100000 # 流動性制約
     import time
     start_time = time.time()
 
@@ -220,14 +246,14 @@ def submit():
     Cardi_sum = 0
     for i in range(real_cardi):
             Cardi_sum += q[i]
-    f += 0.1 * (Cardi_want - Cardi_sum) ** 2
+    f += lamda1 * (Cardi_want - Cardi_sum) ** 2
 
     # 2. 予算の拡充度制約
     Budget_sum = 0
     for i in range(real_cardi):
             Budget_sum += stock_price_np[i][0] * q[i]
 
-    # f += 0.001 * ((Budget_want - Budget_sum) * 1/10000) ** 2
+    f += lamda2 * ((Budget_want - Budget_sum) * 1/10000) ** 2
 
     # 3. 取引の流動性制約
     count_volume = 0
@@ -239,7 +265,7 @@ def submit():
         else:
             count_volume += q[i] * false
             # print("20万以下 : ", i)
-    f += 0.1 * (Cardi_want - count_volume) ** 2
+    f += lamda3 * (Cardi_want - count_volume) ** 2
 
 
     # 4. 産業の構成割合制約
@@ -255,8 +281,8 @@ def submit():
         add_to_dict(sector[0][i], dict_sector_t, 1)
         add_to_dict(sector[0][i], dict_sector_p, q[i])
 
-    # for key in dict_sector_t.keys():
-    #     f += 0.001*(( dict_sector_t[key] / real_cardi ) - ( dict_sector_p[key] / real_cardi )) ** 2
+    for key in dict_sector_t.keys():
+        f += lamda4*(( dict_sector_t[key] / real_cardi ) - ( dict_sector_p[key] / real_cardi )) ** 2
 
 
 
